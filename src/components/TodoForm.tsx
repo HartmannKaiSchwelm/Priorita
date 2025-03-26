@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"; 
 import { supabase } from "../supabase";  
-import { useAuth } from "../context/AuthContext";
+// import { useAuth } from "../context/AuthContext";
 
 export default function TodoForm({ onClose }: { onClose: () => void }) {
     const [title, setTitle] = useState("");
@@ -10,7 +10,7 @@ export default function TodoForm({ onClose }: { onClose: () => void }) {
     const [categories, setCategories] = useState<string[]>([]);
     const [priority, setPriority] = useState(0);
     const [dueDate, setDueDate] = useState("");
-    const { user } = useAuth();
+    // const { user } = useAuth();
      
     // load unique categories from db 
     useEffect(() => {

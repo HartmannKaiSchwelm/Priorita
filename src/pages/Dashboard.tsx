@@ -4,12 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { User } from "@supabase/supabase-js";
 import Todos from "../components/Todos";
 import Sidebar from "../components/Sidebar";
-import TodoForm from "../components/TodoForm"; // Importiere das Formular
+import TodoForm from "../components/TodoForm";
 
 export default function Dashboard() {
     const [user, setUser] = useState<User | null>(null);
     const [filter, setFilter] = useState("all");
-    const [showForm, setShowForm] = useState(false); // 🟢 Steuert die Ansicht
+    const [showForm, setShowForm] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -22,13 +22,23 @@ export default function Dashboard() {
             }
         }
         checkUser();
-    }, []);
+    }, [navigate]);
+
+    // Dummy-Funktion für reloadCategories
+    const reloadCategories = () => {
+        // Diese Funktion könnte in Zukunft implementiert werden
+        console.log("Kategorien neu laden");
+    };
 
     return (
         <div className="h-screen flex bg-gradient-to-b from-sky-300 to-gray-200">
-            <Sidebar setFilter={setFilter} setShowForm={setShowForm} /> {/* 🟢 Sidebar kann das Formular öffnen */}
+            <Sidebar 
+                setFilter={setFilter} 
+                setShowForm={setShowForm} 
+                reloadCategories={reloadCategories}
+            />
             <div className="flex-1 p-4">
-                {showForm ? ( // 🔄 Umschalten zwischen Formular & Todos
+                {showForm ? (
                     <TodoForm onClose={() => setShowForm(false)} />
                 ) : (
                     <>

@@ -1,31 +1,38 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabase";
-import { useAuth } from "../context/AuthContext"; // Falls Auth benötigt wird
+// import { useAuth } from "../context/AuthContext"; // Falls Auth benötigt wird
 import { FaRegTrashCan } from "react-icons/fa6";
 type Todo = {
     id: number;
     title: string;
     category: string;
 };
+type TodosProps = {
+    filter: string;
 
-export default function Todos() {
+};
+export default function Todos({ filter } : TodosProps) {
     const [todos, setTodos] = useState<Todo[]>([]);
-    const { user  } = useAuth() || {}; // Falls Auth nötig ist
+    // 🟢 Todos mit Filter abrufen
+  const fetchTodos = async () => {
+    let query = supabase
+      .from("todos")
+      .select("*")
+      .order("id", { ascending: false });
 
-    // 🟢 Todos aus Supabase abrufen
-    const fetchTodos = async () => {
-        const { data, error } = await supabase
-            .from("todos")
-            .select("*")
-            .order("id", { ascending: false });
+    if (filter !== "all") {
+      query = query.eq("category", filter);
+    }
 
-        if (error) console.error("Fehler beim Abrufen:", error.message);
-        else setTodos(data || []);
-    };
+    const { data, error } = await query;
 
-    useEffect(() => {
-        fetchTodos();
-    }, []);
+    if (error) console.error("Fehler beim Abrufen:", error.message);
+    else setTodos(data || []);
+  };
+
+  useEffect(() => {
+    fetchTodos();
+  }, [filter]); //
 
     // 🛑 FALSCH: Direktes Löschen im onClick → UI wird nicht aktualisiert!
     // ❌ onClick={() => supabase.from("todos").delete().eq("id", todo.id)}
