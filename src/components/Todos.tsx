@@ -1,50 +1,48 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../supabase";
-// import { useAuth } from "../context/AuthContext"; // Falls Auth benötigt wird
 import { FaRegTrashCan } from "react-icons/fa6";
+
 type Todo = {
     id: number;
     title: string;
     category: string;
 };
+
 type TodosProps = {
     filter: string;
-
+    reloadCategories: () => void; // 🟢 reloadCategories als Prop
 };
-export default function Todos({ filter } : TodosProps) {
+
+export default function Todos({ filter, reloadCategories }: TodosProps) {
     const [todos, setTodos] = useState<Todo[]>([]);
-    // 🟢 Todos mit Filter abrufen
-  const fetchTodos = async () => {
-    let query = supabase
-      .from("todos")
-      .select("*")
-      .order("id", { ascending: false });
 
-    if (filter !== "all") {
-      query = query.eq("category", filter);
-    }
+    const fetchTodos = async () => {
+        let query = supabase
+            .from("todos")
+            .select("*")
+            .order("id", { ascending: false });
 
-    const { data, error } = await query;
+        if (filter !== "all") {
+            query = query.eq("category", filter);
+        }
 
-    if (error) console.error("Fehler beim Abrufen:", error.message);
-    else setTodos(data || []);
-  };
+        const { data, error } = await query;
 
-  useEffect(() => {
-    fetchTodos();
-  }, [filter]); //
+        if (error) console.error("Fehler beim Abrufen:", error.message);
+        else setTodos(data || []);
+    };
 
-    // 🛑 FALSCH: Direktes Löschen im onClick → UI wird nicht aktualisiert!
-    // ❌ onClick={() => supabase.from("todos").delete().eq("id", todo.id)}
+    useEffect(() => {
+        fetchTodos();
+    }, [filter]);
 
-    // ✅ RICHTIG: Separates `handleDelete`, das die UI aktualisiert
     const handleDelete = async (id: number) => {
         const { error } = await supabase.from("todos").delete().eq("id", id);
         if (error) {
             console.error("Fehler beim Löschen:", error.message);
         } else {
-            // 🟢 Erfolgreich gelöscht → Todo aus dem State entfernen
             setTodos(todos.filter((todo) => todo.id !== id));
+            reloadCategories(); // 🟢 Kategorien neu laden
         }
     };
 
@@ -62,7 +60,7 @@ export default function Todos({ filter } : TodosProps) {
                                 className="bg-light text-dark px-3 py-1 rounded"
                                 onClick={() => handleDelete(todo.id)}
                             >
-                                <span className="flex justify-between items-center mx-0.5"><FaRegTrashCan/> Delete</span>
+                                <span className="flex justify-between items-center mx-0.5"><FaRegTrashCan /> Delete</span>
                             </button>
                         </div>
                     </li>
