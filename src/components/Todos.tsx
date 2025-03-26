@@ -10,7 +10,7 @@ type Todo = {
 
 export default function Todos() {
     const [todos, setTodos] = useState<Todo[]>([]);
-    const { user } = useAuth(); // Falls Auth nötig ist
+    const { user  } = useAuth() || {}; // Falls Auth nötig ist
 
     // 🟢 Todos aus Supabase abrufen
     const fetchTodos = async () => {
