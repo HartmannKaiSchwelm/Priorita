@@ -24,10 +24,8 @@ function validateAndSanitizeUrl(url: string | undefined): string {
   }
 }
 
-// Multiple fallback mechanisms for URL and key
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL 
-  ? `https://${import.meta.env.VITE_SUPABASE_URL.replace(/^https:\/\//, '')}`
-  : 'default-url';
+
+const SUPABASE_URL = validateAndSanitizeUrl(import.meta.env.VITE_SUPABASE_URL) || 'default-url';
 
 const SUPABASE_ANON_KEY = 
   import.meta.env.VITE_SUPABASE_ANON_KEY || 
