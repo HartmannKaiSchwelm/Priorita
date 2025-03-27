@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../supabase";
+
+
+import React from "react";
 import { IoIosAddCircleOutline } from "react-icons/io";
 
 type SidebarProps = {
