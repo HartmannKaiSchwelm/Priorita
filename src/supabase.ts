@@ -25,11 +25,9 @@ function validateAndSanitizeUrl(url: string | undefined): string {
 }
 
 // Multiple fallback mechanisms for URL and key
-const SUPABASE_URL = validateAndSanitizeUrl(
-  import.meta.env.VITE_SUPABASE_URL || 
-  process.env.VITE_SUPABASE_URL || 
-  'hphqgbqtsslzkefdegmg.supabase.co'
-);
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL 
+  ? `https://${import.meta.env.VITE_SUPABASE_URL.replace(/^https:\/\//, '')}`
+  : 'default-url';
 
 const SUPABASE_ANON_KEY = 
   import.meta.env.VITE_SUPABASE_ANON_KEY || 
@@ -38,7 +36,13 @@ const SUPABASE_ANON_KEY =
 
 // Debug logging
 console.log('Parsed Supabase URL:', SUPABASE_URL);
-
+console.log('Raw VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
+console.log('Cleaned URL:', SUPABASE_URL);
+console.log('URL Construction:', {
+  startsWith: SUPABASE_URL.startsWith('https://'),
+  includes: SUPABASE_URL.includes('https://'),
+  fullUrl: SUPABASE_URL
+});
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
