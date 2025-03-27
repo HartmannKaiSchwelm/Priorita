@@ -49,7 +49,7 @@ export default function Dashboard() {
                 setFilter={setFilter} 
                 setShowForm={setShowForm} 
                 categories={categories}
-                reloadCategories={fetchCategories}
+                
             />
             <div className="flex-1 p-4">
                 {showForm ? (
