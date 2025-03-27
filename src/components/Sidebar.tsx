@@ -1,39 +1,47 @@
-
-
-import React from "react";
-import { IoIosAddCircleOutline } from "react-icons/io";
+import { FaPlus, FaFilter } from "react-icons/fa";
 
 type SidebarProps = {
     setFilter: (filter: string) => void;
     setShowForm: (show: boolean) => void;
-    categories: string[]; // 🟢 Kategorien als Prop
+    categories: string[];
     reloadCategories: () => void;
 };
 
-export default function Sidebar({ setFilter, setShowForm, categories, reloadCategories }: SidebarProps) {
-    
+export default function Sidebar({ 
+    setFilter, 
+    setShowForm, 
+    categories 
+}: Omit<SidebarProps, 'reloadCategories'>) {
     return (
-        <div className="w-64 h-screen bg-gradient-to-b from-sky-300 to-gray-200 p-4">
-            <h2 className="text-xl font-bold mb-4">📋 Navigation</h2>
-
-            <button className="bg-transparent text-light   hover:text-dark flex px-4 py-2 w-full mb-4 rounded justify-evenly items-center " onClick={() => setShowForm(true)}>
-                <IoIosAddCircleOutline className="text-xl  " /> Create a new todo
+        <div className="w-64 bg-white p-4 shadow-md">
+            <button 
+                onClick={() => setShowForm(true)} 
+                className="w-full bg-blue-500 text-white p-2 rounded mb-4 flex items-center justify-center"
+            >
+                <FaPlus className="mr-2" /> New Todo
             </button>
 
-            <h3 className="text-lg font-semibold mt-4">📂 Categories</h3>
-            {categories.length > 0 ? (
-                categories.map((category) => (
-                    <button
-                        key={category}
-                        className="w-full text-center shadow-lg mt-2 bg-dark text-light p-2 rounded"
+            <h3 className="font-bold mb-2 flex items-center">
+                <FaFilter className="mr-2" /> Filter by Category
+            </h3>
+            
+            <ul className="space-y-2">
+                <li 
+                    onClick={() => setFilter('all')} 
+                    className="cursor-pointer hover:bg-gray-100 p-2 rounded"
+                >
+                    All Todos
+                </li>
+                {categories.map((category) => (
+                    <li 
+                        key={category} 
                         onClick={() => setFilter(category)}
+                        className="cursor-pointer hover:bg-gray-100 p-2 rounded"
                     >
                         {category}
-                    </button>
-                ))
-            ) : (
-                <p>Keine Kategorien vorhanden.</p>
-            )}
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 }
