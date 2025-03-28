@@ -24,25 +24,19 @@ function validateAndSanitizeUrl(url: string | undefined): string {
   }
 }
 
+const SUPABASE_URL = validateAndSanitizeUrl(import.meta.env.VITE_SUPABASE_URL);
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const SUPABASE_URL = validateAndSanitizeUrl(import.meta.env.VITE_SUPABASE_URL) || 'default-url';
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  throw new Error('Missing Supabase environment variables');
+}
 
-const SUPABASE_ANON_KEY = 
-  import.meta.env.VITE_SUPABASE_ANON_KEY || 
-  process.env.VITE_SUPABASE_ANON_KEY || 
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhwaHFnYnF0c3NsemtlZmRlZ21nIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzODU1MjgsImV4cCI6MjA1Nzk2MTUyOH0.OZqZyNOn8CZvx1R0pT_WCsVcWpGaBvVy-eGV9u4ayJQ';
-
-// Debug logging
-console.log('Parsed Supabase URL:', SUPABASE_URL);
-console.log('Raw VITE_SUPABASE_URL:', import.meta.env.VITE_SUPABASE_URL);
-console.log('Cleaned URL:', SUPABASE_URL);
-console.log('URL Construction:', {
-  startsWith: SUPABASE_URL.startsWith('https://'),
-  includes: SUPABASE_URL.includes('https://'),
-  fullUrl: SUPABASE_URL
-});
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
     persistSession: true,
+    storageKey: 'todoapp-auth',
+    storage: window.localStorage,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
   },
 });

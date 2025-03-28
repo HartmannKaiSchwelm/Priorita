@@ -99,18 +99,6 @@ export default function Layout(props: { reloadCategories?: () => void }) {
                 )}
                 
                 <main className="flex-1 p-4 lg:p-6 bg-transparent overflow-auto">
-                    {/* Fixed Mobile New Todo Button for very small screens */}
-                    {user && !isLandingPage && !showForm && (
-                        <div className="fixed bottom-4 right-4 z-50 lg:hidden">
-                            <button
-                                onClick={() => setShowForm(true)}
-                                className="bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
-                            >
-                                <FaPlus size={24} />
-                            </button>
-                        </div>
-                    )}
-                    
                     {showForm ? (
                         <div className="flex justify-center items-start pt-4 lg:pt-8">
                             <div className="w-full max-w-md">

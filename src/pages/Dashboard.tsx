@@ -125,7 +125,7 @@ export default function Dashboard() {
 
     return (
         <div className="h-screen flex flex-col bg-transparent">
-            <div className="flex-1 overflow-y-auto pt-16">
+            <div className="flex-1 overflow-y-auto pt-17">
                 {showForm ? (
                     <div className="flex justify-center items-start p-4">
                         <div className="w-full max-w-md">

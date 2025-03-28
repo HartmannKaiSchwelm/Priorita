@@ -31,8 +31,20 @@ const Header = () => {
     }, [user]);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        navigate('/');
+        try {
+            const { error } = await supabase.auth.signOut();
+            if (error) {
+                console.error('Logout error:', error);
+                alert('Error during logout. Please try again.');
+                return;
+            }
+            // Clear any local state if needed
+            setTodoCount(0);
+            navigate('/');
+        } catch (error) {
+            console.error('Logout error:', error);
+            alert('Error during logout. Please try again.');
+        }
     };
 
     return (
