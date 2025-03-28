@@ -143,9 +143,7 @@ export default function Dashboard() {
                     ) : (
                         <Todos 
                             filter={filter || 'all'} 
-                            reloadCategories={fetchCategories} 
-                            categories={categories}
-                            setCategories={setCategories}
+                            reloadCategories={fetchCategories}
                         />
                     )
                 )}

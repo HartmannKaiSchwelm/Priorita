@@ -86,7 +86,6 @@ export default function Layout(props: { reloadCategories?: () => void }) {
                             setFilter={setFilter} 
                             setShowForm={setShowForm} 
                             categories={categories} 
-                            reloadCategories={fetchCategories}
                             activeFilter={filter || 'all'}
                         />
                     </div>
