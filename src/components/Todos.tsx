@@ -18,54 +18,95 @@ type TodosProps = {
 export default function Todos({ filter, reloadCategories }: TodosProps) {
     const activeFilter = filter || "all";
     const [todos, setTodos] = useState<Todo[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchTodos = async () => {
-            let query = supabase
-                .from("todos")
-                .select("*")
-                .order("id", { ascending: false });
+            try {
+                setIsLoading(true);
+                setError(null);
+                
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) throw new Error("Not authenticated");
 
-            if (activeFilter !== "all") {
-                query = query.eq("category", activeFilter);
-            }
+                let query = supabase
+                    .from("todos")
+                    .select("*")
+                    .eq("user_id", user.id)
+                    .order("id", { ascending: false });
 
-            const { data, error } = await query;
-            if (error) {
-                alert("Error loading todos. Please refresh the page.");
-                return;
+                if (activeFilter !== "all") {
+                    query = query.eq("category", activeFilter);
+                }
+
+                const { data, error } = await query;
+                if (error) throw error;
+                
+                const todosWithCategories = data?.map(todo => ({
+                    ...todo,
+                    category: todo.category || 'Uncategorized'
+                })) || [];
+                setTodos(todosWithCategories);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Error loading todos");
+                console.error("Error fetching todos:", err);
+            } finally {
+                setIsLoading(false);
             }
-            
-            const todosWithCategories = data?.map(todo => ({
-                ...todo,
-                category: todo.category || 'Uncategorized'
-            })) || [];
-            setTodos(todosWithCategories);
         };
 
         fetchTodos();
     }, [activeFilter]);
 
     const handleDelete = async (id: number) => {
-        const { error } = await supabase.from("todos").delete().eq("id", id);
-        if (error) {
+        try {
+            const { error } = await supabase.from("todos").delete().eq("id", id);
+            if (error) throw error;
+            
+            setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+            await reloadCategories();
+        } catch (err) {
             alert("Error deleting todo. Please try again.");
-            return;
+            console.error("Error deleting todo:", err);
         }
-        
-        setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
-        await reloadCategories();
     };
 
     // Sortiere Todos nach Priorität (High -> Medium -> Low), nur ohne Deadline
     const prioritySortedTodos = [...todos]
-        .filter(todo => todo.due_date === null) // Explizit nach null filtern
+        .filter(todo => todo.due_date === null)
         .sort((a, b) => b.priority - a.priority);
 
     // Sortiere Todos nach Deadline (nächste zuerst), nur mit Deadline
     const deadlineSortedTodos = [...todos]
-        .filter(todo => todo.due_date !== null) // Explizit nach nicht-null filtern
+        .filter(todo => todo.due_date !== null)
         .sort((a, b) => new Date(a.due_date!).getTime() - new Date(b.due_date!).getTime());
+
+    if (isLoading) {
+        return (
+            <div className="p-4 w-full">
+                <div className="animate-pulse">
+                    <div className="h-4 bg-blue-200 rounded w-1/4 mb-4"></div>
+                    <div className="space-y-3">
+                        <div className="h-8 bg-blue-200 rounded"></div>
+                        <div className="h-8 bg-blue-200 rounded"></div>
+                        <div className="h-8 bg-blue-200 rounded"></div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="p-4 w-full">
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    <strong className="font-bold">Error: </strong>
+                    <span className="block sm:inline">{error}</span>
+                </div>
+            </div>
+        );
+    }
 
     const TodoCard = ({ todo }: { todo: Todo }) => (
         <li key={todo.id} className="border bg-sec text-light p-2 rounded mt-2">
@@ -101,21 +142,29 @@ export default function Todos({ filter, reloadCategories }: TodosProps) {
                 {/* Prioritäts-sortierte Todos (ohne Deadline) */}
                 <div className="w-full lg:flex-1">
                     <h3 className="text-lg font-semibold mb-2">By Priority (no deadline)</h3>
-                    <ul className="w-full">
-                        {prioritySortedTodos.map(todo => (
-                            <TodoCard key={todo.id} todo={todo} />
-                        ))}
-                    </ul>
+                    {prioritySortedTodos.length === 0 ? (
+                        <p className="text-gray-500 italic">No todos without deadline</p>
+                    ) : (
+                        <ul className="w-full">
+                            {prioritySortedTodos.map(todo => (
+                                <TodoCard key={todo.id} todo={todo} />
+                            ))}
+                        </ul>
+                    )}
                 </div>
 
                 {/* Deadline-sortierte Todos */}
                 <div className="w-full lg:flex-1">
                     <h3 className="text-lg font-semibold mb-2">By Deadline</h3>
-                    <ul className="w-full">
-                        {deadlineSortedTodos.map(todo => (
-                            <TodoCard key={todo.id} todo={todo} />
-                        ))}
-                    </ul>
+                    {deadlineSortedTodos.length === 0 ? (
+                        <p className="text-gray-500 italic">No todos with deadline</p>
+                    ) : (
+                        <ul className="w-full">
+                            {deadlineSortedTodos.map(todo => (
+                                <TodoCard key={todo.id} todo={todo} />
+                            ))}
+                        </ul>
+                    )}
                 </div>
             </div>
         </div>
