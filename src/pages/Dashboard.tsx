@@ -124,10 +124,10 @@ export default function Dashboard() {
     }, []);
 
     return (
-        <div className="h-screen flex bg-transparent">
-            <div className="flex-1 p-4">
+        <div className="h-screen flex flex-col bg-transparent">
+            <div className="flex-1 overflow-y-auto pt-16">
                 {showForm ? (
-                    <div className="flex justify-center items-start pt-8">
+                    <div className="flex justify-center items-start p-4">
                         <div className="w-full max-w-md">
                             <TodoForm 
                                 onClose={handleCloseForm}
@@ -139,12 +139,16 @@ export default function Dashboard() {
                     </div>
                 ) : (
                     todoCount === 0 ? (
-                        <EmptyState onCreateTodo={handleCreateTodo} />
+                        <div className="h-[calc(100vh-4rem)]">
+                            <EmptyState onCreateTodo={handleCreateTodo} />
+                        </div>
                     ) : (
-                        <Todos 
-                            filter={filter || 'all'} 
-                            reloadCategories={fetchCategories}
-                        />
+                        <div className="p-4">
+                            <Todos 
+                                filter={filter || 'all'} 
+                                reloadCategories={fetchCategories}
+                            />
+                        </div>
                     )
                 )}
             </div>
