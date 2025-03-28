@@ -1,5 +1,16 @@
-import React, { useState} from "react";
+import React, { useState } from "react";
 import { supabase } from "../supabase";
+
+const DEFAULT_CATEGORIES = [
+    "Work",
+    "Personal",
+    "Shopping",
+    "Health",
+    "Education",
+    "Home",
+    "Urgent"
+];
+
 type TodoFormProps = {
     onClose: () => void;
     refreshCategories: () => void;
@@ -9,24 +20,51 @@ type TodoFormProps = {
 
 export default function TodoForm({ onClose, refreshCategories, categories, setCategories }: TodoFormProps) {
     const [title, setTitle] = useState("");
-    const [category, setCategory] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("");
     const [newCategory, setNewCategory] = useState("");
     const [priority, setPriority] = useState(0);
     const [dueDate, setDueDate] = useState("");
+    const [dateError, setDateError] = useState("");
+
+    // Combine default and user categories, remove duplicates
+    const allCategories = [...new Set([...DEFAULT_CATEGORIES, ...categories])].sort();
+
+    // Get today's date in YYYY-MM-DD format for min attribute
+    const today = new Date().toISOString().split('T')[0];
+
+    const validateDate = (date: string) => {
+        if (!date) return true; // Optional date is valid
+        const selectedDate = new Date(date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time part for accurate date comparison
+        
+        if (selectedDate < today) {
+            setDateError("Deadline cannot be in the past");
+            return false;
+        }
+        setDateError("");
+        return true;
+    };
+
+    const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newDate = e.target.value;
+        setDueDate(newDate);
+        validateDate(newDate);
+    };
 
     const addTodo = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!title.trim()) return;
+        if (!validateDate(dueDate)) return;
 
         // Hole den aktuellen Benutzer direkt
         const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser();
 
-        if (userError || !currentUser) return alert("Nicht eingeloggt!");
+        if (userError || !currentUser) return alert("Not logged in!");
 
-        // Falls eine neue Kategorie eingegeben wurde → Diese verwenden
-        let categoryToSave = newCategory.trim() ? newCategory.trim() : selectedCategory;
+        // Verwende die neue Kategorie, wenn sie eingegeben wurde, sonst die ausgewählte Kategorie
+        const categoryToSave = newCategory.trim() || selectedCategory;
 
         // Falls die neue Kategorie nicht existiert, zur DB & zur Liste hinzufügen
         if (newCategory.trim() && !categories.includes(newCategory.trim())) {
@@ -43,44 +81,49 @@ export default function TodoForm({ onClose, refreshCategories, categories, setCa
             }
         ]);
 
-        if (error) console.error("Fehler beim Speichern:", error.message);
-        else {
+        if (error) {
+            alert("Error saving todo. Please try again.");
+        } else {
             setTitle("");
             setNewCategory("");
             setSelectedCategory("");
             setPriority(1);
             setDueDate("");
-            refreshCategories(); // 🟢 Kategorien neu laden
+            refreshCategories();
             onClose();
         }
     };
 
     return (
-        <form onSubmit={addTodo} className="flex flex-col gap-2 p-4 bg-gray-100 rounded shadow mx-50">
-            <h2 className="text-xl font-bold">Neues Todo erstellen</h2>
+        <form onSubmit={addTodo} className="flex flex-col gap-4 bg-transparent rounded">
+            <h2 className="text-xl font-bold mb-2">New Todo</h2>
             <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Neues Todo..."
+                placeholder="New Todo..."
                 className="border p-2 rounded"
                 required />
 
             {/* Dropdown categories */}
-            <label>Kategorie:</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} className="border p-2 rounded">
-                <option value="">Wähle eine Kategorie</option>
-                {categories.map((cat) => (
+            <label>Category:</label>
+            <select 
+                value={selectedCategory} 
+                onChange={(e) => setSelectedCategory(e.target.value)} 
+                className="border p-2 rounded"
+            >
+                <option value="">Select a category</option>
+                {allCategories.map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
                 ))}
             </select>
 
-            {/* 🆕 Eigene Kategorie */}
+            {/* Eigene Kategorie */}
             <input
                 type="text"
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="Oder neue Kategorie eingeben..."
+                placeholder="Or enter new category..."
                 className="border p-2 rounded"
             />
 
@@ -93,19 +136,27 @@ export default function TodoForm({ onClose, refreshCategories, categories, setCa
             </select>
 
             {/* Deadline  */}
-            <label>Deadline-Date</label>
-            <input type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                className="border p-2 rounded" />
+            <label>Deadline</label>
+            <div className="flex flex-col gap-1">
+                <input 
+                    type="date"
+                    value={dueDate}
+                    onChange={handleDateChange}
+                    min={today}
+                    className={`border p-2 rounded ${dateError ? 'border-red-500' : ''}`}
+                />
+                {dateError && (
+                    <p className="text-red-500 text-sm">{dateError}</p>
+                )}
+            </div>
 
             {/* buttons */}
-            <div className="flex gap-2">
-                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
-                    ➕ Hinzufügen
+            <div className="flex flex-col gap-2 mt-4">
+                <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 active:bg-blue-700 transition-colors duration-200 flex items-center justify-center gap-2">
+                    ➕ Add
                 </button>
-                <button type="button" onClick={onClose} className="bg-red-500 text-white px-4 py-2 rounded">
-                    ❌ Abbrechen
+                <button type="button" onClick={onClose} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 active:bg-red-700 transition-colors duration-200 flex items-center justify-center gap-2">
+                    ❌ Cancel
                 </button>
             </div>
         </form>

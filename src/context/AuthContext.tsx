@@ -1,5 +1,5 @@
 // src/context/AuthContext.tsx
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '../supabase';
 import { User } from '@supabase/supabase-js';
 
@@ -7,9 +7,9 @@ type AuthContextType = {
   user: User | null;
 };
 
-const AuthContext = createContext<AuthContextType>({ user: null });
+export const AuthContext = createContext<AuthContextType>({ user: null });
 
-export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+export const AuthProvider: React.FC<{children: ReactNode}> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -30,5 +30,3 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => useContext(AuthContext);
