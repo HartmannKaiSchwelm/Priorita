@@ -4,7 +4,6 @@ type SidebarProps = {
     setFilter: (filter: string) => void;
     setShowForm: (show: boolean) => void;
     categories: string[];
-    reloadCategories: () => void;
     activeFilter: string;
 };
 
@@ -12,7 +11,6 @@ export default function Sidebar({
     setFilter, 
     setShowForm, 
     categories,
-    reloadCategories,
     activeFilter
 }: SidebarProps) {
     return (

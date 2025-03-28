@@ -13,11 +13,9 @@ type Todo = {
 type TodosProps = {
     filter?: string;
     reloadCategories: () => void;
-    categories: string[];
-    setCategories: (categories: string[]) => void;
 };
 
-export default function Todos({ filter, reloadCategories, categories, setCategories }: TodosProps) {
+export default function Todos({ filter, reloadCategories }: TodosProps) {
     const activeFilter = filter || "all";
     const [todos, setTodos] = useState<Todo[]>([]);
 
