@@ -25,30 +25,37 @@ export default function Layout(props: { reloadCategories?: () => void }) {
     };
     // Funktion zum Laden der Kategorien
     const fetchCategories = async () => {
-        const { data, error } = await supabase
-            .from("todos")
-            .select("category")
-            .not("category", "is", null);
+        try {
+            const { data, error } = await supabase
+                .from("todos")
+                .select("category")
+                .not("category", "is", null)
+                .eq("user_id", user?.id);  // Nur Kategorien des aktuellen Users
 
-        if (data) {
-            const cleanedCategories = data.map(row => String(row.category).trim()).filter(cat => cat !== "");
-            setCategories([...new Set(cleanedCategories)]);
-        }
-        if (error) {
+            if (error) throw error;
+
+            if (data) {
+                const uniqueCategories = [...new Set(
+                    data
+                        .map(row => String(row.category).trim())
+                        .filter(cat => cat !== "")
+                )].sort();
+                setCategories(uniqueCategories);
+            } else {
+                setCategories([]);
+            }
+        } catch (error) {
+            console.error("Error fetching categories:", error);
             alert("Error loading categories. Please refresh the page.");
-            return;
-        }
-
-        if (data && data.length > 0) {
-            const uniqueCategories = [...new Set(data.map(row => row.category).filter(Boolean))];
-            setCategories(uniqueCategories);
         }
     };
 
-    // Lade Kategorien beim ersten Rendern
+    // Lade Kategorien beim ersten Rendern und wenn sich der User ändert
     useEffect(() => {
         if (user) {
             fetchCategories();
+        } else {
+            setCategories([]);
         }
     }, [user]);
     return (
