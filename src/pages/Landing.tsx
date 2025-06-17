@@ -1,4 +1,4 @@
-import { FaCircleCheck, FaCalendar, FaListUl, FaUserPlus, FaRegTrashCan, FaPlus } from "react-icons/fa6";
+import { FaCircleCheck, FaCalendar, FaListUl, FaUserPlus, FaRegTrashCan } from "react-icons/fa6";
 
 const Landing = () => {
     return (
